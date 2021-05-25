@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import it.polito.tdp.imdb.model.Actor;
+import it.polito.tdp.imdb.model.Adiacenza;
 import it.polito.tdp.imdb.model.Director;
 import it.polito.tdp.imdb.model.Movie;
 
@@ -83,6 +84,91 @@ public class ImdbDAO {
 			return null;
 		}
 	}
+	
+	public List<String> listAllGenres(){
+		String sql = "SELECT DISTINCT genre "
+				+ "FROM movies_genres";
+		
+		List<String> result = new ArrayList<String>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+				
+				result.add(res.getString("genre"));
+			}
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public List<Actor> listSelectedActors(String genre){
+		
+		String sql = "SELECT DISTINCT a.id, a.first_name, a.last_name, a.gender "
+				+ "FROM movies_genres mg, actors a, roles r "
+				+ "WHERE mg.genre = ? AND a.id = r.actor_id AND mg.movie_id = r.movie_id AND r.actor_id = a.id "
+				+ "ORDER by a.id ASC";
+		
+		List<Actor> result = new ArrayList<Actor>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, genre);
+			ResultSet res = st.executeQuery();
+			
+			while (res.next()) {
+				Actor actor = new Actor(res.getInt("a.id"), res.getString("a.first_name"), res.getString("a.last_name"),res.getString("a.gender"));				
+				result.add(actor);
+			}
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public List<Adiacenza> getAdiacenze(String genre){
+		
+		String sql = "SELECT r1.actor_id as id1, r2.actor_id as id2, COUNT(DISTINCT(mg1.movie_id)) AS peso "
+				+ "FROM roles r1, roles r2, movies_genres mg1, movies m "
+				+ "WHERE mg1.genre = ? AND m.id = mg1.movie_id AND r1.movie_id = m.id AND r2.movie_id = m.id "
+				+ "AND r1.actor_id > r2.actor_id AND r1.movie_id = r2.movie_id "
+				+ "GROUP BY r1.actor_id, r2.actor_id";
+		
+		List<Adiacenza> result = new ArrayList<Adiacenza>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, genre);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				Adiacenza a = new Adiacenza(res.getInt("id1"),res.getInt("id2"),res.getInt("peso"));
+				
+				result.add(a);
+			}
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	
+	
+	
 	
 	
 	

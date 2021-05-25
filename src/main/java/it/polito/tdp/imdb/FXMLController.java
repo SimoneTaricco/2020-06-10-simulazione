@@ -7,6 +7,7 @@ package it.polito.tdp.imdb;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.imdb.model.Actor;
 import it.polito.tdp.imdb.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,10 +36,10 @@ public class FXMLController {
     private Button btnSimulazione; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxGenere"
-    private ComboBox<?> boxGenere; // Value injected by FXMLLoader
+    private ComboBox<String> boxGenere; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxAttore"
-    private ComboBox<?> boxAttore; // Value injected by FXMLLoader
+    private ComboBox<Actor> boxAttore; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtGiorni"
     private TextField txtGiorni; // Value injected by FXMLLoader
@@ -49,15 +50,46 @@ public class FXMLController {
     @FXML
     void doAttoriSimili(ActionEvent event) {
 
+    	this.txtResult.clear();
+    	
+    	for (Actor a:model.collegati(this.boxAttore.getValue()))
+    		this.txtResult.appendText(a.toString() + "\n");
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-
+    	
+    	String s = this.boxGenere.getValue();
+    	model.creaGrafo(s);
+    	
+    	this.boxAttore.getItems().addAll(model.vertici());
+    	
+    	this.txtResult.setText("Grafo creato!\nNumero vertici: " + model.vertici().size() +"\nNumero archi: " + model.numeroArchi());
+    	
     }
 
     @FXML
     void doSimulazione(ActionEvent event) {
+    	
+    	this.txtResult.clear();
+    	
+    	String annoS = txtGiorni.getText();
+    	
+    	try {
+    		int anno = Integer.parseInt(annoS);
+    		model.runSim(anno);
+    		
+    		for (Actor a:model.intervistati())
+        		this.txtResult.appendText(a.toString() + "\n");
+    		
+    		this.txtResult.appendText("Giorni pausa: " + model.giorniPausa());
+    		
+    		
+    	} catch (NumberFormatException e) {
+    		txtResult.appendText("Errore: il valore inserito non è un intero\n");
+    		return;
+    	}
+
 
     }
 
@@ -75,5 +107,6 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.boxGenere.getItems().addAll(model.genresList());
     }
 }
