@@ -26,7 +26,6 @@ public class Model {
 
 	public Model() {
 		this.dao = new ImdbDAO();
-		this.sim = new Simulator(this);
 	}
 	
 	public List<String> genresList() {
@@ -55,6 +54,7 @@ public class Model {
 	}
 	
 	public void runSim(int numGiorni) {	
+		this.sim = new Simulator(this);
 		sim.init(this.vertici(), numGiorni);
 		sim.run();	
 	}
@@ -82,14 +82,14 @@ public class Model {
 		return this.grafo.edgeSet().size();
 	}
 	
-	public List<Actor> collegati (Actor partenza) {
+	public List<Actor> collegati (Actor partenza) { 
 		
 		TreeMap<String,Actor> map = new TreeMap<String,Actor>();
 
 		ConnectivityInspector<Actor,DefaultWeightedEdge> insp = new ConnectivityInspector<>(this.grafo);
 		
-		for (Actor a:this.grafo.vertexSet()) {
-			if (insp.pathExists(a,partenza) && !a.equals(partenza))
+		for (Actor a:insp.connectedSetOf(partenza)) {
+			if (!a.equals(partenza))
 				map.put(a.lastName + a.firstName, a);
 		}
 		

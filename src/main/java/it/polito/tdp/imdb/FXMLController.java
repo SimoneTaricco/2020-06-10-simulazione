@@ -72,12 +72,11 @@ public class FXMLController {
     void doSimulazione(ActionEvent event) {
     	
     	this.txtResult.clear();
-    	
-    	String annoS = txtGiorni.getText();
+
     	
     	try {
-    		int anno = Integer.parseInt(annoS);
-    		model.runSim(anno);
+    		int giorni = Integer.parseInt(txtGiorni.getText());
+    		model.runSim(giorni);
     		
     		for (Actor a:model.intervistati())
         		this.txtResult.appendText(a.toString() + "\n");
